@@ -1,0 +1,7 @@
+streamlit
+pandas
+python-dotenv
+ibm-watsonx-ai
+PyPDF2
+python-docx
+requests

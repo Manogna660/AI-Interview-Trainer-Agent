@@ -1,23 +1,28 @@
-def evaluate_answer(answer):
+from backend.granite_api import ask_granite
 
-    score = 0
 
-    feedback = []
+def evaluate_answer(question, answer):
 
-    if len(answer) > 100:
-        score += 4
-        feedback.append("Detailed answer.")
+    prompt = f"""
+You are an expert interviewer.
 
-    if "example" in answer.lower():
-        score += 2
-        feedback.append("Examples included.")
+Interview Question:
+{question}
 
-    if "project" in answer.lower():
-        score += 2
-        feedback.append("Project experience mentioned.")
+Candidate Answer:
+{answer}
 
-    if "team" in answer.lower():
-        score += 2
-        feedback.append("Teamwork demonstrated.")
+Evaluate it.
 
-    return score, feedback
+Give:
+
+Score out of 10
+
+Strengths
+
+Weaknesses
+
+Improved Answer
+"""
+
+    return ask_granite(prompt)

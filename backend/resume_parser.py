@@ -1,33 +1,12 @@
-import re
+import pdfplumber
 
-def extract_skills(text):
+def extract_resume_text(pdf_file):
+    text = ""
 
-    skills = [
+    with pdfplumber.open(pdf_file) as pdf:
+        for page in pdf.pages:
+            page_text = page.extract_text()
+            if page_text:
+                text += page_text + "\n"
 
-        "Python",
-        "Java",
-        "C",
-        "C++",
-        "SQL",
-        "Machine Learning",
-        "Deep Learning",
-        "Data Science",
-        "Pandas",
-        "NumPy",
-        "TensorFlow",
-        "Scikit-learn",
-        "Power BI",
-        "Excel",
-        "Statistics"
-
-    ]
-
-    found=[]
-
-    for skill in skills:
-
-        if re.search(skill,text,re.IGNORECASE):
-
-            found.append(skill)
-
-    return found
+    return text

@@ -1,37 +1,22 @@
-def recommend(score):
+from backend.granite_api import ask_granite
 
-    if score >= 8:
 
-        return [
+def recommend(answer):
 
-            "Advanced Machine Learning",
+    prompt = f"""
+Based on this interview answer:
 
-            "System Design",
+{answer}
 
-            "Mock Interviews"
+Suggest
 
-        ]
+1. Interview tips
 
-    elif score >=5:
+2. Skills to improve
 
-        return [
+3. Online learning resources
 
-            "Python Practice",
+4. Final recommendation
+"""
 
-            "SQL",
-
-            "Statistics"
-
-        ]
-
-    else:
-
-        return [
-
-            "Python Basics",
-
-            "Data Structures",
-
-            "Communication Skills"
-
-        ]
+    return ask_granite(prompt)

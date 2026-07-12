@@ -1,9 +1,8 @@
-from backend.granite_api import generate_interview
-from backend.resume_parser import extract_skills
+from backend.resume_parser import extract_resume_text
 from backend.evaluation_agent import evaluate_answer
 from backend.recommendation_agent import recommend
-from backend.granite_api import generate_interview
 import streamlit as st
+from backend.granite_api import generate_interview
 import pandas as pd
 import os
 
@@ -83,42 +82,27 @@ The system consists of multiple AI agents that work together.
 # -----------------------------
 # Resume Upload
 # -----------------------------
+uploaded_file = st.file_uploader(
+    "Upload Resume",
+    type=["pdf"]
+)
 
-elif page=="📄 Upload Resume":
+if uploaded_file:
 
-    st.header("📄 Resume Upload")
+    with open("resume.pdf", "wb") as f:
+        f.write(uploaded_file.read())
 
-    uploaded=st.file_uploader(
-        "Upload Resume",
-        type=["pdf","docx"]
+    resume_text = extract_resume_text("resume.pdf")
+
+    st.success("Resume uploaded successfully!")
+
+    st.subheader("Resume Preview")
+
+    st.text_area(
+        "Resume Content",
+        resume_text,
+        height=300
     )
-
-    if uploaded:
-
-        if not os.path.exists("uploads"):
-            os.mkdir("uploads")
-
-        with open(
-            os.path.join("uploads",uploaded.name),
-            "wb"
-        ) as f:
-
-            f.write(uploaded.getbuffer())
-
-        st.success("Resume Uploaded Successfully!")
-        resume_text = uploaded.getvalue().decode("latin-1", errors="ignore")
-        
-        skills = extract_skills(resume_text)
-
-        st.subheader("Detected Skills")
-
-        st.write(skills)
-
-        st.write("Filename :",uploaded.name)
-
-        st.info(
-            "Resume parsing will be performed by Resume Agent."
-        )
 
 # -----------------------------
 # Job Role
@@ -165,24 +149,18 @@ elif page=="💼 Select Job Role":
 
 elif page == "🎤 Mock Interview":
 
-    st.header("🎤 AI Mock Interview")
+    st.title("🎤 AI Mock Interview")
 
-    role = st.selectbox(
-        "Select Interview Role",
-        [
-            "Data Scientist",
-            "Machine Learning Engineer",
-            "Data Analyst",
-            "Python Developer"
-        ]
-    )
+    role = st.text_input("Enter Job Role")
 
-    if st.button("Generate Questions"):
-        questions = generate_interview(role)
-        
-        st.success("IBM Granite Generated Questions")
-        
-        st.markdown(questions)
+    if st.button("Generate Interview Questions"):
+
+        with st.spinner("Generating questions using IBM Granite..."):
+            questions = generate_interview(role)
+
+        st.success("Questions Generated Successfully!")
+
+        st.write(questions)
          
 # -----------------------------
 # Evaluation

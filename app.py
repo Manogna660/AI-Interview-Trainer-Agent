@@ -1,247 +1,157 @@
+import streamlit as st
 from backend.resume_parser import extract_resume_text
+from backend.granite_api import generate_interview
 from backend.evaluation_agent import evaluate_answer
 from backend.recommendation_agent import recommend
-import streamlit as st
-from backend.granite_api import generate_interview
-import pandas as pd
-import os
 
 st.set_page_config(
-    page_title="InterviewGenius AI",
-    page_icon="🤖",
+    page_title="AI Interview Trainer Agent",
+    page_icon="🎤",
     layout="wide"
 )
 
-# -----------------------------
-# Sidebar
-# -----------------------------
+st.sidebar.title("AI Interview Trainer")
 
-st.sidebar.title("🤖 InterviewGenius AI")
-
-page = st.sidebar.radio(
-    "Navigation",
+page = st.sidebar.selectbox(
+    "Select Page",
     [
-        "🏠 Dashboard",
+        "🏠 Home",
         "📄 Upload Resume",
-        "💼 Select Job Role",
         "🎤 Mock Interview",
-        "📊 Evaluation",
-        "📚 Learning Resources",
-        "ℹ About"
+        "📝 Answer Evaluation",
+        "💡 Recommendations"
     ]
 )
 
-# -----------------------------
-# Dashboard
-# -----------------------------
+# -------------------- HOME --------------------
 
-if page == "🏠 Dashboard":
+if page == "🏠 Home":
 
-    st.title("🤖 InterviewGenius AI")
+    st.title("🎤 AI Interview Trainer Agent")
 
-    st.subheader(
-        "Agentic AI Interview Coach using IBM Granite"
-    )
+    st.markdown("""
+### Welcome!
 
-    st.markdown("---")
+This AI-powered application helps job seekers prepare for technical interviews.
 
-    c1,c2,c3,c4=st.columns(4)
-    c1.metric("AI Agents","5")
-    
-    c2.metric("IBM Granite","Connected")
-    
-    c3.metric("Interview Score","--")
-    
-    c4.metric("RAG","Enabled")
+### Features
+- 📄 Upload Resume
+- 🤖 AI Resume Analysis
+- 🎤 AI Mock Interview
+- 📝 AI Answer Evaluation
+- 💡 Personalized Recommendations
 
-    st.markdown("---")
+### Technologies Used
+- Python
+- Streamlit
+- IBM watsonx.ai
+- IBM Granite Foundation Model
 
-    st.header("Project Overview")
-
-    st.write("""
-InterviewGenius AI is an Agentic AI application developed using
-IBM Granite Foundation Models.
-
-The system consists of multiple AI agents that work together.
-
-### AI Agents
-
-• Resume Analysis Agent
-
-• Skill Extraction Agent
-
-• Interview Generation Agent
-
-• Evaluation Agent
-
-• Learning Recommendation Agent
 """)
 
-    st.success("Select any module from the sidebar.")
+# -------------------- RESUME UPLOAD --------------------
 
-# -----------------------------
-# Resume Upload
-# -----------------------------
-uploaded_file = st.file_uploader(
-    "Upload Resume",
-    type=["pdf"]
-)
+elif page == "📄 Upload Resume":
 
-if uploaded_file:
+    st.title("📄 Resume Upload")
 
-    with open("resume.pdf", "wb") as f:
-        f.write(uploaded_file.read())
-
-    resume_text = extract_resume_text("resume.pdf")
-
-    st.success("Resume uploaded successfully!")
-
-    st.subheader("Resume Preview")
-
-    st.text_area(
-        "Resume Content",
-        resume_text,
-        height=300
+    uploaded_file = st.file_uploader(
+        "Upload your Resume (PDF)",
+        type=["pdf"]
     )
 
-# -----------------------------
-# Job Role
-# -----------------------------
+    if uploaded_file is not None:
 
-elif page=="💼 Select Job Role":
+        with open("resume.pdf", "wb") as f:
+            f.write(uploaded_file.read())
 
-    st.header("Select Job Role")
+        resume_text = extract_resume_text("resume.pdf")
 
-    role=st.selectbox(
+        st.success("Resume uploaded successfully!")
 
-        "Choose Role",
+        st.subheader("Extracted Resume Text")
 
-        [
+        st.text_area(
+            "Resume",
+            resume_text,
+            height=300
+        )
 
-            "Data Scientist",
-
-            "Machine Learning Engineer",
-
-            "Data Analyst",
-
-            "AI Engineer",
-
-            "Python Developer",
-
-            "Software Engineer"
-
-        ]
-
-    )
-
-    st.success(f"Selected Role : {role}")
-
-    if st.button("Generate Questions"):
-        with st.spinner("IBM Granite is generating interview questions..."):
-            questions = generate_interview(role)
-        
-        st.success("Questions Generated Successfully!")
-        
-        st.write(questions)
-    # -----------------------------
-# Mock Interview
-# -----------------------------
+# -------------------- MOCK INTERVIEW --------------------
 
 elif page == "🎤 Mock Interview":
 
     st.title("🎤 AI Mock Interview")
 
-    role = st.text_input("Enter Job Role")
+    job_role = st.text_input(
+        "Enter Job Role",
+        placeholder="Example: Python Developer"
+    )
+    experience = st.selectbox(
+    "Experience Level",
+    ["Fresher", "1-3 Years", "3-5 Years", "5+ Years"]
+    )
 
     if st.button("Generate Interview Questions"):
 
-        with st.spinner("Generating questions using IBM Granite..."):
-            questions = generate_interview(role)
+        if job_role.strip() == "":
+            st.warning("Please enter a job role.")
+        else:
 
-        st.success("Questions Generated Successfully!")
+            with st.spinner("Generating interview questions..."):
 
-        st.write(questions)
-         
-# -----------------------------
-# Evaluation
-# -----------------------------
+                questions = generate_interview(job_role, experience)
 
-if st.button("Evaluate"):
+            st.success("Interview Questions Generated!")
 
-    score,feedback = evaluate_answer(answer)
+            st.write(questions)
 
-    st.metric("Interview Score",f"{score}/10")
+# -------------------- ANSWER EVALUATION --------------------
 
-    st.subheader("Feedback")
+elif page == "📝 Answer Evaluation":
 
-    for i in feedback:
+    st.title("📝 AI Answer Evaluation")
 
-        st.success(i)
+    question = st.text_area("Interview Question")
 
-    st.subheader("Recommended Learning")
+    answer = st.text_area("Your Answer")
 
-    rec = recommend(score)
+    if st.button("Evaluate Answer"):
 
-    for r in rec:
+        if question.strip() == "" or answer.strip() == "":
+            st.warning("Please enter both the question and your answer.")
+        else:
+            with st.spinner("Evaluating your answer..."):
+                result = evaluate_answer(question, answer)
 
-        st.write("•",r)
+            st.success("Evaluation Completed!")
+            st.write(result)
 
-# -----------------------------
-# Learning Resources
-# -----------------------------
 
-elif page == "📚 Learning Resources":
+# -------------------- RECOMMENDATIONS --------------------
 
-    st.header("📚 Personalized Learning")
+elif page == "💡 Recommendations":
 
-    skill = st.selectbox(
-        "Select Skill",
-        [
-            "Python",
-            "Machine Learning",
-            "SQL",
-            "Deep Learning",
-            "Data Science"
-        ]
-    )
+    st.title("💡 AI Career Recommendations")
 
-    if st.button("Show Resources"):
+    answer = st.text_area("Paste your Answer")
 
-        st.write("### Recommended Resources")
+    if st.button("Get Recommendations"):
 
-        st.write("• IBM SkillsBuild")
+        if answer.strip() == "":
+            st.warning("Please enter your answer.")
+        else:
+            with st.spinner("Generating recommendations..."):
+                tips = recommend(answer)
 
-        st.write("• Coursera")
+            st.success("Recommendations Generated!")
+            st.write(tips)
 
-        st.write("• Kaggle Learn")
 
-        st.write("• freeCodeCamp")
+# -------------------- FOOTER --------------------
 
-        st.write("• GeeksforGeeks")
-
-# -----------------------------
-# About
-# -----------------------------
-
-elif page == "ℹ About":
-
-    st.header("About Project")
-
-    st.write("""
-InterviewGenius AI is an Agentic AI Interview Coach.
-
-Developed using:
-
-• IBM Granite
-
-• IBM watsonx.ai
-
-• IBM Cloud Lite
-
-• Streamlit
-
-• Python
-
-This project demonstrates Agentic AI using
-multiple intelligent agents.
-""")
+st.sidebar.markdown("---")
+st.sidebar.info(
+    "AI Interview Trainer Agent\n\n"
+    "Powered by IBM watsonx.ai Granite"
+)

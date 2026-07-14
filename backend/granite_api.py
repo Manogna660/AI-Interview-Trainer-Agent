@@ -30,12 +30,23 @@ def ask_granite(prompt):
     return response
 
 
-def generate_interview(job_role):
+def generate_interview(job_role, experience):
 
     prompt = f"""
-Generate exactly 5 technical interview questions for a {job_role}.
+You are an AI Interview Trainer Agent.
 
-Only return the questions.
+Candidate Details:
+Job Role: {job_role}
+Experience Level: {experience}
+
+Generate:
+1. 10 Technical Interview Questions
+2. 5 HR Interview Questions
+3. Model Answers
+4. Interview Preparation Tips
+5. Common Mistakes
+
+Tailor the questions according to the job role and experience level.
 """
 
     return ask_granite(prompt)
